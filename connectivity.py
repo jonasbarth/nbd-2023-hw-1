@@ -4,7 +4,7 @@ A graph is said to be connected if there is a path between any two nodes in the 
 """
 import networkx as nx
 import numpy as np
-import random
+
 
 def check_irreducibility(graph: nx.graph):
     """Checks connectivity of graph with reducibility of the graph's adjacency matrix.
