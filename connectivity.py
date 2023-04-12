@@ -55,9 +55,6 @@ def check_bfs(graph: nx.graph):
     :return
     True if the BFS traversal reaches all nodes, False otherwise.
     """
-    for start_node in graph.nodes():
-        bfs_edges = nx.bfs_tree(graph, start_node).edges()
-        if len(bfs_edges) != len(graph.edges()):
-            return False
 
-    return True
+    bfs_edges = nx.bfs_tree(graph, list(graph)[0]).edges()
+    return len(bfs_edges) == len(graph.edges())
