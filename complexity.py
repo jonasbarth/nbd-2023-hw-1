@@ -40,12 +40,12 @@ class Complexity:
         times = np.zeros((len(n_nodes)))
 
         for i, k in enumerate(n_nodes):
-            graph = create_graph(k, start_k)
+            graph = create_graph(k, 2)
             exec_time = self.time_connectivity(n_exec, graph)
 
             times[i] = exec_time
 
-        return np.hstack([n_nodes, times])
+        return np.vstack([n_nodes, times]).T
 
 
 
