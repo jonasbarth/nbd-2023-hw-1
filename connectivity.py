@@ -4,7 +4,7 @@ A graph is said to be connected if there is a path between any two nodes in the 
 """
 import networkx as nx
 import numpy as np
-
+import random
 
 def check_irreducibility(graph: nx.graph):
     """Checks connectivity of graph with reducibility of the graph's adjacency matrix.
@@ -45,4 +45,19 @@ def check_laplacian(graph: nx.graph):
 
 
 def check_bfs(graph: nx.graph):
-    pass
+    """Checks connectivity of graph with BFS.
+
+    A graph is considered connected if the BFS traversal reaches all nodes, from any other node.
+
+    :arg
+    graph - an nx.graph to be checked.
+
+    :return
+    True if the BFS traversal reaches all nodes, False otherwise.
+    """
+    for start_node in graph.nodes():
+        bfs_edges = nx.bfs_tree(graph, start_node).edges()
+        if len(bfs_edges) != len(graph.edges()):
+            return False
+
+    return True

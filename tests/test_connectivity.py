@@ -29,3 +29,16 @@ def test_laplacian_connected():
     g = nx.from_numpy_array(m)
 
     assert connectivity.check_laplacian(g)
+
+def test_bfs_for_connected_graph():
+    m = np.array([[0, 1], [1, 0]])
+    g = nx.from_numpy_array(m)
+
+    assert connectivity.check_bfs(g)
+
+def test_bfs_for_disconnected_graph():
+
+    m = np.array([[1, 0], [0, 1]])
+    g = nx.from_numpy_array(m)
+
+    assert not connectivity.check_bfs(g)
