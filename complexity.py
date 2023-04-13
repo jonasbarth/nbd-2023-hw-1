@@ -5,7 +5,7 @@ import timeit
 import networkx as nx
 import numpy as np
 
-
+#TODO make this class into a TimeComplexity class where the results are saved in the class instead of being returned.
 class Complexity:
 
     def __init__(self, connec):
@@ -34,7 +34,8 @@ class Complexity:
         end_k - the number of nodes in the last graph.
 
         :return
-        an np.array with k in the first column and the time in the second column.
+        (np.array, np.array) - a tuple where the first array is the number of nodes at each iteration and the second array
+        is the time the execution took in seconds.
         """
         n_nodes = np.array([k for k in range(start_k, end_k + 1)])
         times = np.zeros((len(n_nodes)))
@@ -45,7 +46,7 @@ class Complexity:
 
             times[i] = exec_time
 
-        return np.vstack([n_nodes, times]).T
+        return n_nodes, times
 
 
 
