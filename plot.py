@@ -2,9 +2,9 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+import complexity
 
-
-def plot_connectivity_complexity(k: np.array, time: np.array, title: str):
+def plot_time_complexity(time_complexity: complexity.TimeComplexity, title: str):
     """Plots the time as a function of the number nodes in a graph.
 
     :arg
@@ -14,7 +14,7 @@ def plot_connectivity_complexity(k: np.array, time: np.array, title: str):
     :return
     None
     """
-    plt.plot(k, time)
+    plt.plot(time_complexity.n_nodes, time_complexity.times)
     plt.title(title)
     plt.ylabel("Time in s")
     plt.xlabel("Number of nodes in graph")

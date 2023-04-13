@@ -5,13 +5,17 @@ import timeit
 import networkx as nx
 import numpy as np
 
-#TODO make this class into a TimeComplexity class where the results are saved in the class instead of being returned.
-class Complexity:
 
-    def __init__(self, connec):
+class TimeComplexity:
+    """A class for measuring the time complexity of a graph connectivity algorithm."""
+
+    def __init__(self, connec, create_graph):
+        self.times = np.array([])
+        self.n_nodes = np.array([])
         self.connec = connec
+        self.create_graph = create_graph
 
-    def time_connectivity(self, n_exec: int, graph: nx.graph):
+    def _time_connectivity(self, n_exec: int, graph: nx.graph):
         """Times a connectivity function.
 
         :arg
@@ -24,7 +28,7 @@ class Complexity:
         """
         return timeit.timeit(lambda: self.connec(graph), number=n_exec) / n_exec
 
-    def time_connectivity_multiple(self, create_graph, n_exec: int, start_k: int, end_k: int):
+    def time_connectivity_multiple(self, n_exec: int, start_k: int, end_k: int):
         """Times the connectivity function multiple times for graphs of different sizes.
 
         :arg
@@ -41,12 +45,10 @@ class Complexity:
         times = np.zeros((len(n_nodes)))
 
         for i, k in enumerate(n_nodes):
-            graph = create_graph(k, 2)
-            exec_time = self.time_connectivity(n_exec, graph)
+            graph = self.create_graph(k, 2)
+            exec_time = self._time_connectivity(n_exec, graph)
 
             times[i] = exec_time
 
-        return n_nodes, times
-
-
-
+        self.n_nodes = n_nodes
+        self.times = times
