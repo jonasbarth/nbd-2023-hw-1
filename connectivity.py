@@ -107,8 +107,8 @@ def r_random_connectivity(n_nodes, node_degree, repeats):
     for k in n_nodes:
         connected = 0
         for _ in range(repeats):
-            er_graph = graphs.create_regular_graph(k, node_degree=node_degree)
-            if check_bfs(er_graph):
+            regular_graph = graphs.create_regular_graph(k, node_degree=node_degree)
+            if check_bfs(regular_graph):
                 connected += 1
 
         connected_probs.append(connected / repeats)
