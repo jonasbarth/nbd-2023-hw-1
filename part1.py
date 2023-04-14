@@ -4,8 +4,12 @@ import connectivity
 import graphs
 import plot
 import numpy as np
+import os
 
 if __name__ == "__main__":
+
+    if not os.path.exists('img'):
+        os.makedirs('img')
 
     # create complexity plots
     lap_complex = complexity.TimeComplexity(connec=connectivity.check_laplacian,
@@ -25,7 +29,7 @@ if __name__ == "__main__":
     fig, ax = plot.plot_time_complexity(time_complexity=[irred_complex, lap_complex, bfs_complex],
                                         labels=["Irreducibility", "Laplacian", "BFS"],
                                         title="Connectivity Algorithm Complexity")
-    fig.savefig("connectivity_complexity.eps", format="eps")
+    fig.savefig("img/connectivity_complexity.eps", format="eps")
 
 
     # create connectivity probability plots
@@ -36,13 +40,13 @@ if __name__ == "__main__":
     fig, _ = plot.plot_connectivity_prob([r_connec1, r_connec2], ["r = 2", "r = 8"], "R-Random Graph Connectivity",
                                        "Number of Nodes")
 
-    fig.savefig("r-random_graph_connectivity.eps", format="eps")
+    fig.savefig("img/r-random_graph_connectivity.eps", format="eps")
 
     er_connec = connectivity.er_connectivity(100, np.linspace(0.01, 1, 100), 10)
     fig, _ = plot.plot_connectivity_prob([er_connec], [""], "Erdos-Renyi Graph Connectivity",
                                           "p")
 
-    fig.savefig("er-graph_connectivity.eps", format="eps")
+    fig.savefig("img/er-graph_connectivity.eps", format="eps")
 
 
 
