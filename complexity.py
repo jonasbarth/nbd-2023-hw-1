@@ -26,9 +26,9 @@ class TimeComplexity:
         :return
         the average execution time over n_exec executions.
         """
-        return timeit.timeit(lambda: self.connec(graph), number=n_exec) / n_exec
+        return min(timeit.Timer(lambda: self.connec(graph)).repeat(n_exec, 1))
 
-    def time_connectivity_multiple(self, n_exec: int, start_k: int, end_k: int):
+    def time(self, n_exec: int, start_k: int, end_k: int):
         """Times the connectivity function multiple times for graphs of different sizes.
 
         :arg
