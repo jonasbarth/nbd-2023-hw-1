@@ -2,8 +2,12 @@
 
 A graph is said to be connected if there is a path between any two nodes in the graph.
 """
+from collections import namedtuple
+
 import networkx as nx
 import numpy as np
+
+import graph
 
 
 def check_irreducibility(graph: nx.graph):
@@ -57,4 +61,56 @@ def check_bfs(graph: nx.graph):
     """
 
     bfs_edges = nx.bfs_tree(graph, list(graph)[0]).edges()
-    return len(bfs_edges) == len(graph.edges())
+    return len(bfs_edges) == len(graph.nodes) - 1
+
+
+Connectivity = namedtuple("Connectivity", "x probs")
+
+
+def er_connectivity(n_nodes: int, edge_probs, repeats: int):
+    """Calculates the probability of connectivity of an ER graph as a function of the probability of edge connections.
+
+    :arg
+    n_nodes - the number of nodes in the ER graph.
+    edge_probs - an iterable of probabilities of edge connections.
+    repeats - number of repetitions for each value in the edge_probs.
+
+    :return
+    a Connectivity namedtuple with the edge_probs as the x value and the connection probability as the probs.
+    """
+    connected_probs = []
+    for p in edge_probs:
+        connected = 0
+        for _ in range(repeats):
+            er_graph = graph.create_er_graph(n_nodes, p=p)
+            if check_bfs(er_graph):
+                connected += 1
+
+        connected_probs.append(connected / repeats)
+
+    return Connectivity(np.array(edge_probs), np.array(connected_probs))
+
+
+def r_random_connectivity(n_nodes, node_degree, repeats):
+    """Calculates the probability of connectivity of an ER graph as a function of the probability of edge connections.
+
+    :arg
+    n_nodes - the number of nodes in the r-random graph.
+    node_degree - the degree of every node in the graph.
+    repeats - number of repetitions for each value in n_nodes.
+
+    :return
+    a Connectivity namedtuple with the n_nodes as the x value and the connection probability as the probs.
+    """
+    connected_probs = []
+
+    for k in n_nodes:
+        connected = 0
+        for _ in range(repeats):
+            er_graph = graph.create_regular_graph(k, r=node_degree)
+            if check_bfs(er_graph):
+                connected += 1
+
+        connected_probs.append(connected / repeats)
+
+    return Connectivity(np.array(n_nodes), np.array(connected_probs))
