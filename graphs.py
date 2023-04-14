@@ -14,7 +14,7 @@ def create_er_graph(k, p):
     """
     return nx.erdos_renyi_graph(k, p)
 
-def create_regular_graph(k, deg):
+def create_regular_graph(k, node_degree):
     """Creates a random regular graph.
 
     :arg
@@ -24,4 +24,4 @@ def create_regular_graph(k, deg):
     :return
     an nx.graph with k nodes.
     """
-    return nx.random_regular_graph(deg, k)
+    return nx.random_regular_graph(node_degree, k)

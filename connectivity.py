@@ -7,7 +7,7 @@ from collections import namedtuple
 import networkx as nx
 import numpy as np
 
-import graph
+import graphs
 
 
 def check_irreducibility(graph: nx.graph):
@@ -82,7 +82,7 @@ def er_connectivity(n_nodes: int, edge_probs, repeats: int):
     for p in edge_probs:
         connected = 0
         for _ in range(repeats):
-            er_graph = graph.create_er_graph(n_nodes, p=p)
+            er_graph = graphs.create_er_graph(n_nodes, p=p)
             if check_bfs(er_graph):
                 connected += 1
 
@@ -107,8 +107,8 @@ def r_random_connectivity(n_nodes, node_degree, repeats):
     for k in n_nodes:
         connected = 0
         for _ in range(repeats):
-            er_graph = graph.create_regular_graph(k, r=node_degree)
-            if check_bfs(er_graph):
+            regular_graph = graphs.create_regular_graph(k, node_degree=node_degree)
+            if check_bfs(regular_graph):
                 connected += 1
 
         connected_probs.append(connected / repeats)
