@@ -16,14 +16,14 @@ def plot_time_complexity(time_complexity: list[complexity.TimeComplexity], label
     :return
     None
     """
-    for t_c, label in zip(time_complexity, labels):
-        plt.plot(t_c.n_nodes, t_c.times, label=label)
+    fig, ax = plt.subplots(1)
 
-    plt.title("Connectivity Algorithm Complexity")
-    plt.ylabel("Time in s")
-    plt.xlabel("Number of nodes in graph")
-    plt.legend()
-    plt.show()
+    for t_c, label in zip(time_complexity, labels):
+        ax.plot(t_c.n_nodes, t_c.times, label=label)
+
+    ax.set(title=title, ylabel="Time in s", xlabel="Number of nodes in graph")
+    ax.legend()
+    return fig, ax
 
 
 def plot_connectivity_prob(connectivity_prob: list[connectivity.Connectivity], labels: [str], title: str, xlabel: str):
@@ -34,13 +34,13 @@ def plot_connectivity_prob(connectivity_prob: list[connectivity.Connectivity], l
     labels - a list of labels.
     title - the title of the plot.
     """
+    fig, ax = plt.subplots(1)
+
     for connec, label in zip(connectivity_prob, labels):
-        plt.plot(connec.x, connec.probs, label=label)
+        ax.plot(connec.x, connec.probs, label=label)
 
-    plt.title(title)
-    plt.xlabel(xlabel)
-    plt.ylabel("Connectivity Probability")
+    ax.set(title=title, xlabel=xlabel, ylabel="Connectivity Probability")
     if len(connectivity_prob) > 1:
-        plt.legend()
+        ax.legend()
 
-    plt.show()
+    return fig, ax
