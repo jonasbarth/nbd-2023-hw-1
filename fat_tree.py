@@ -4,19 +4,24 @@
 class FatTree:
     """A FatTree."""
 
-    def __init__(self, n, N, tau):
+    def __init__(self, n, tau, capacity):
         """creates the FatTree object.
 
         :arg
         n - the number of ports in a server in the fat-tree.
         N - the number of servers in the fat-tree.
         tau - trip time between two nodes in the server in micro-seconds.
+        capacity - the capacity of links in the fat-tree in Gbit/s.
         """
         self.n = n
-        self.n_servers = N
         self.n_aggregate_servers = n / 2
         self.n_edge_servers = n / 2
         self.tau = tau
+        self.capacity = capacity
+
+        self.n_hops_cache = {}
+        self.avg_throughput_cache = {}
+        self.round_trip_time_cache = {}
 
     def get_n_hops(self, i, j):
         """Gets the number of hops between two nodes.
@@ -28,12 +33,18 @@ class FatTree:
         :return
         an integer that is the number hops.
         """
+        if (i, j) in self.n_hops_cache:
+            return self.n_hops_cache[(i, j)]
+
         if not self.in_same_pod(i, j):
+            self.n_hops_cache[(i ,j)] = 6
             return 6
 
         if self.share_edge_server(i, j):
+            self.n_hops_cache[(i, j)] = 2
             return 2
 
+        self.n_hops_cache[(i, j)] = 3
         return 3
 
     def in_same_pod(self, i, j):
@@ -62,20 +73,25 @@ class FatTree:
         """
         return self.in_same_pod(i, j) and abs(i - j) == 1 and max(i, j) % 2 == 0
 
-    def avg_throughput(self, i, j, capacity):
+    def avg_throughput(self, i, j, n_servers):
         """Calculates the average throughput between two servers.
 
         :arg
         i - the first server.
         j - the second server.
-        capacity - the capacity of a network link in Gbit/s.
 
         :return
         the average throughput in Gbit/s.
         """
-        return capacity \
+        if (i, j) in self.avg_throughput_cache:
+            return self.avg_throughput_cache[(i, j)]
+
+        throughput = self.capacity \
             * (1 / self.round_trip_time(i, j)) \
-            / sum([self.round_trip_time(i, k) for k in range(1, self.n_servers + 1)])
+            / sum([self.round_trip_time(i, k) for k in range(1, n_servers + 1)])
+
+        self.avg_throughput_cache[(i, j)] = throughput
+        return throughput
 
     def round_trip_time(self, i, j):
         """Calculates the round trip time between two servers.
@@ -87,4 +103,9 @@ class FatTree:
         :return
         the round trip time between two servers in microseconds.
         """
-        return 2 * self.tau * self.get_n_hops(i, j)
+        if (i, j) in self.round_trip_time_cache:
+            return self.round_trip_time_cache[(i, j)]
+
+        time = 2 * self.tau * self.get_n_hops(i, j)
+        self.round_trip_time_cache[(i, j)] = time
+        return time
