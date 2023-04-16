@@ -88,7 +88,7 @@ class FatTree:
 
         throughput = self.capacity \
             * (1 / self.round_trip_time(i, j)) \
-            / sum([1 / self.round_trip_time(i, k) for k in range(1, n_servers + 1)])
+            / sum([1 / self.round_trip_time(i, k) for k in range(n_servers)])
 
         self.avg_throughput_cache[(i, j)] = throughput
         return throughput
