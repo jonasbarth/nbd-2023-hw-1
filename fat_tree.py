@@ -19,7 +19,8 @@ class FatTree:
         self.tau = tau
         self.capacity = capacity
 
-        self.n_servers_per_pod = (n ** 3 // 4) // n
+        self.n_servers = (n ** 3 // 4)
+        self.n_servers_per_pod = self.n_servers // n
         pod_servers = np.arange(0, self.n_servers_per_pod, dtype=np.int32)
 
         self.all_servers = np.tile(np.array(pod_servers), (n, 1))
@@ -30,9 +31,9 @@ class FatTree:
 
         self.all_servers += broadcast_array
 
-        self.n_hops_cache = {}
-        self.avg_throughput_cache = {}
-        self.round_trip_time_cache = {}
+        self.n_hops_cache = np.ones(self.n_servers) * -1
+        self.avg_throughput_cache = np.ones(self.n_servers) * -1
+        self.round_trip_time_cache = np.ones(self.n_servers) * -1
 
     def get_n_hops(self, i, j):
         """Gets the number of hops between two nodes.
@@ -44,19 +45,7 @@ class FatTree:
         :return
         an integer that is the number hops.
         """
-        if (i, j) in self.n_hops_cache:
-            return self.n_hops_cache[(i, j)]
-
-        if not self.in_same_pod(i, j):
-            self.n_hops_cache[(i ,j)] = 6
-            return 6
-
-        if self.share_edge_server(i, j):
-            self.n_hops_cache[(i, j)] = 2
-            return 2
-
-        self.n_hops_cache[(i, j)] = 3
-        return 3
+        return self.n_hops_cache[j]
 
     def in_same_pod(self, i, j):
         """Checks whether two servers are in the same pod in a fat-tree.
@@ -100,14 +89,14 @@ class FatTree:
         :return
         the average throughput in Gbit/s.
         """
-        if (i, j) in self.avg_throughput_cache:
-            return self.avg_throughput_cache[(i, j)]
+        if self.avg_throughput_cache[j] != -1:
+            return self.avg_throughput_cache[j]
 
         throughput = self.capacity \
             * (1 / self.round_trip_time(i, j)) \
             / sum([1 / self.round_trip_time(i, k) for k in range(n_servers)])
 
-        self.avg_throughput_cache[(i, j)] = throughput
+        self.avg_throughput_cache[j] = throughput
         return throughput
 
     def round_trip_time(self, i, j):
@@ -120,11 +109,11 @@ class FatTree:
         :return
         the round trip time between two servers in microseconds.
         """
-        if (i, j) in self.round_trip_time_cache:
-            return self.round_trip_time_cache[(i, j)]
+        if self.round_trip_time_cache[j] != -1:
+            return self.round_trip_time_cache[j]
 
         time = 2 * self.tau * self.get_n_hops(i, j)
-        self.round_trip_time_cache[(i, j)] = time
+        self.round_trip_time_cache[j] = time
         return time
 
     def n_closest(self, server, n_closest):
@@ -135,12 +124,13 @@ class FatTree:
         """
 
         pod_number = server // self.n_servers_per_pod
-        edge_number = server // self.n_edge_servers
+        edge_number = server % self.n_edge_servers
         edge_servers = self.all_servers[pod_number, edge_number]
         edge_servers = np.delete(edge_servers, np.argwhere(edge_servers == server))
 
-        self._set_hop_cache(server, edge_servers, 2)
+        self._set_hop_cache(edge_servers, 2)
         n_edge_servers = edge_servers.shape[0]
+
         if n_closest <= n_edge_servers:
             return edge_servers[0:n_closest]
 
@@ -150,9 +140,9 @@ class FatTree:
         n_pod_servers = np.min((n_remaining_servers, self.n_servers_per_pod - n_edge_servers))
         pod_servers = self.all_servers[pod_number].flatten()
         pod_servers = pod_servers[~np.isin(pod_servers, edge_servers)]
-        pod_servers = pod_servers[0: n_pod_servers]
+        pod_servers = pod_servers[0:n_pod_servers]
 
-        self._set_hop_cache(server, pod_servers, 3)
+        self._set_hop_cache(pod_servers, 3)
         n_remaining_servers = n_closest - n_edge_servers - n_pod_servers
 
         if n_remaining_servers == 0:
@@ -165,10 +155,10 @@ class FatTree:
 
         rest_servers = remaining_servers[0:n_remaining_servers]
 
-        self._set_hop_cache(server, rest_servers, 6)
+        self._set_hop_cache(rest_servers, 6)
 
         return np.hstack((edge_servers, pod_servers, rest_servers))
 
-    def _set_hop_cache(self, server, servers, hops):
+    def _set_hop_cache(self, servers, hops):
         for s in servers:
-            self.n_hops_cache[(server, s)] = hops
+            self.n_hops_cache[s] = hops
