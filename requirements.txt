@@ -4,3 +4,4 @@ matplotlib
 networkx
 pytest
 scipy
+tqdm
