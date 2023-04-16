@@ -57,7 +57,7 @@ class FatTree:
         :return
         True if servers i and j are in the same pod, False otherwise.
         """
-        return (i % self.n) - (j % self.n) == 0
+        return (i // self.n) == (j // self.n)
 
     def share_edge_server(self, i, j):
         """Checks whether two servers share the same edge server in a fat-tree.
@@ -88,7 +88,7 @@ class FatTree:
 
         throughput = self.capacity \
             * (1 / self.round_trip_time(i, j)) \
-            / sum([self.round_trip_time(i, k) for k in range(1, n_servers + 1)])
+            / sum([1 / self.round_trip_time(i, k) for k in range(1, n_servers + 1)])
 
         self.avg_throughput_cache[(i, j)] = throughput
         return throughput
