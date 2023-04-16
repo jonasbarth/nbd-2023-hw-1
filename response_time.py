@@ -10,20 +10,22 @@ if __name__ == "__main__":
 
     N = 1000
     n = 64
-    tau = 0.000005
-    capacity_gbit = 10 / 8
+    tau_s = 0.000005
+    capacity_gbit = 10
     expected_job_time_s = 8 * 3600
-    fixed_job_time = 30
+    fixed_job_time_s = 30
     input_file_size_gb = 4000
     output_file_size_gb = 4000
     overhead_multiplier = 1 + 48 / 1500
 
-    tree = fat_tree.FatTree(n, tau, capacity_gbit)
+    baseline = np.random.exponential(expected_job_time_s) + fixed_job_time_s
+
+    tree = fat_tree.FatTree(n, tau_s, capacity_gbit)
     response_times = []
 
     for n_servers in tqdm(range(1, N + 1)):
         exec_times = np.random.exponential(expected_job_time_s / n_servers, n_servers)
-        exec_times += fixed_job_time
+        exec_times += fixed_job_time_s
 
         servers = list(range(n_servers + 1))
         main_server = random.choice(servers)
@@ -44,5 +46,8 @@ if __name__ == "__main__":
 
         response_times.append(np.max(exec_times))
 
-    plt.plot(np.arange(N), response_times)
+    plt.plot(np.arange(N), np.array(response_times) / baseline)
+    plt.xlabel("Number of Servers")
+    plt.ylabel("Response Time")
+    plt.title("Normalised Response Time")
     plt.show()
