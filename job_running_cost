@@ -72,9 +72,25 @@ if __name__ == "__main__":
         job_cost = simulate_job_running_cost(n_servers, 10)
         
         job_costs.append(job_cost)
+        
+    """
+    Plots
+    """
 
     plt.plot(servers, np.array(job_costs) / baseline)
     plt.xlabel("Number of Servers")
     plt.ylabel("S")
     plt.title("Normalised Job Running Cost")
     plt.show()
+
+    """
+    Point 4: Numerical value of the optimal number of servers (minimizing the job
+            job running cost)
+    """
+    
+    min_job_cost = np.min(job_costs)
+    
+    idx = np.where(job_costs == min_job_cost)[0][0]
+    
+    opt_number = list(servers)[idx]
+    
