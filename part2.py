@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import fat_tree
 from tqdm import tqdm
+from response_time import simulate_response_time
 
 if __name__ == "__main__":
 
