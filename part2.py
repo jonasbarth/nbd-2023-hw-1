@@ -1,3 +1,9 @@
+import random
+import numpy as np
+import matplotlib.pyplot as plt
+import fat_tree
+
+
 if __name__ == "__main__":
 
     N = 10000
