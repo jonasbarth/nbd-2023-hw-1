@@ -142,7 +142,7 @@ class FatTree:
         pod_servers = pod_servers[~np.isin(pod_servers, edge_servers)]
         pod_servers = pod_servers[0:n_pod_servers]
 
-        self._set_hop_cache(pod_servers, 3)
+        self._set_hop_cache(pod_servers, 4)
         n_remaining_servers = n_closest - n_edge_servers - n_pod_servers
 
         if n_remaining_servers == 0:
