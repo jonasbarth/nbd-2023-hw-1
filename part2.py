@@ -2,7 +2,7 @@ import random
 import numpy as np
 import matplotlib.pyplot as plt
 import fat_tree
-
+from tqdm import tqdm
 
 if __name__ == "__main__":
 
