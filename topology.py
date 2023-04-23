@@ -36,7 +36,7 @@ class Topology:
         pass
 
     @abstractmethod
-    def avg_throughput(self, server):
+    def avg_throughput(self, i, j, n_servers):
         """Calculates the average throughput between the main server and the provided server.
 
         :arg
@@ -146,17 +146,12 @@ class Jellyfish(Topology):
                     server_index += 1
 
     def n_closest(self, server, n_closest):
-        # Initialize a set to keep track of visited servers
-        visited = set()
-        # Initialize a queue with the starting server
-        queue = [server]
-        # Initialize an array to store the nearest servers
+
+        visited = set() #visited servers
+        queue = [server] #initialize queue with starting server
         nearest_servers = []
-        # While the queue is not empty and we haven't found enough nearest servers
         while queue and len(nearest_servers) < n_closest:
-            # Pop the first server from the queue
             current_server = queue.pop(0)
-            # If the current server has not been visited yet
             if current_server not in visited:
                 # Add it to the visited set
                 visited.add(current_server)
@@ -168,16 +163,47 @@ class Jellyfish(Topology):
                 for neighbor_switch in self.switches[switch]:
                     # Iterate over all servers
                     for neighbor_server in self.server_connections:
-                        # If a server is connected to the neighboring switch
                         if self.server_connections[neighbor_server] == neighbor_switch:
                             # Add it to the queue to be explored later
                             queue.append(neighbor_server)
         # Return a numpy array containing the nearest servers in terms of hops
-        return np.array(nearest_servers[:n_closest])
+        return np.array(nearest_servers)
 
-    def avg_throughput(self, server):
+    def get_n_hops(self, i, j):
+
+        visited = set() #visited servers
+        queue = [(i, 0)] #initialize queue with starting servers and distance
+        while queue:
+            current_server, distance = queue.pop(0)
+            if current_server == j:
+                # Return the distance
+                return distance
+            if current_server not in visited:
+                # Add it to the visited set
+                visited.add(current_server)
+                # Find the switch that the current server is connected to
+                switch = self.server_connections[current_server]
+                # Iterate over all neighboring switches of the current switch
+                for neighbor_switch in self.switches[switch]:
+                    # Iterate over all servers
+                    for neighbor_server in self.server_connections:
+                        # If a server is connected to the neighboring switch
+                        if self.server_connections[neighbor_server] == neighbor_switch:
+                            # Add it to the queue with an incremented distance
+                            queue.append((neighbor_server, distance + 1))
+        # If the end server was not found, return -1 to indicate that it is not reachable from the start server
+        return -1
+
+    def avg_throughput(self, i, j, n_servers):
+
+        throughput = self.capacity * (1/(2 * self.tau * self.get_n_hops(i, j)))/sum([1/(2 * self.tau * self.get_n_hops(i, k)) for k in range(self.servers)])
+
+        return throughput
 
 
 
-        pass
+
+
+
+
 
