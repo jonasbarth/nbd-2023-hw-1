@@ -42,17 +42,14 @@ def simulate_fat_tree_response_time(sim: TopologySimulation, tree: FatTree):
     pod_outbound_time_s = outbound_data_size_gb / pod_throughput
     core_outbound_time_s = outbound_data_size_gb / core_throughput
 
-    for i in range(edge_servers):
-        edge_return_time_s = edge_return_size_gb[i] / edge_throughput
-        edge_exec_times_s[i] += edge_return_time_s + edge_outbound_time_s
+    edge_return_times_s = edge_return_size_gb / edge_throughput
+    edge_exec_times_s += edge_return_times_s + edge_outbound_time_s
 
-    for i in range(pod_servers):
-        pod_return_time_s = pod_return_size_gb[i] / pod_throughput
-        pod_exec_times_s[i] += pod_return_time_s + pod_outbound_time_s
+    pod_return_time_s = pod_return_size_gb / pod_throughput
+    pod_exec_times_s += pod_return_time_s + pod_outbound_time_s
 
-    for i in range(core_servers):
-        rest_return_time_s = core_return_size_gb[i] / core_throughput
-        core_exec_times_s[i] += rest_return_time_s + core_outbound_time_s
+    rest_return_time_s = core_return_size_gb / core_throughput
+    core_exec_times_s += rest_return_time_s + core_outbound_time_s
 
     return np.max(np.hstack((edge_exec_times_s, pod_exec_times_s, core_exec_times_s)))
 
