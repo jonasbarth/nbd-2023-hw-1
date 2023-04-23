@@ -54,3 +54,12 @@ def plot_response_time(servers, response_times):
     ax.set(title="Normalised Response Time", xlabel="response time", ylabel="number of servers")
 
     return fig, ax
+
+def plot_job_running_cost(servers, costs):
+    """Creates a figure for the running cost."""
+    fig, ax = plt.subplots(1)
+
+    ax.plot(servers, costs)
+    ax.set(title="Normalised Job Running Cost", xlabel="running cost", ylabel="number of servers")
+
+    return fig, ax

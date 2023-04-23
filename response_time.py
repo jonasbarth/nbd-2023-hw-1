@@ -1,24 +1,30 @@
+from collections import namedtuple
+
 import numpy as np
 
 from fat_tree import FatTree
 
+TopologySimulation = namedtuple("TopologySimulation", "n_servers, tau_s, capacity_gbit, expected_job_time_s, "
+                                                      "fixed_job_time_s, input_file_size_gb, output_file_size_gb, "
+                                                      "overhead")
 
-def simulate_fat_tree_response_time(n_servers, expected_job_time_s, fixed_job_time_s, input_file_size_gb, output_file_size_gb,
-                                    overhead, tree: FatTree):
+
+
+def simulate_fat_tree_response_time(sim: TopologySimulation, tree: FatTree):
     """Simulates a response time for the Fat Tree topology."""
-    outbound_data_size_gb = input_file_size_gb / n_servers * overhead
+    outbound_data_size_gb = sim.input_file_size_gb / sim.n_servers * sim.overhead
 
-    edge_servers = tree.get_n_free_edge_servers(n_servers)
-    pod_servers = tree.get_n_free_pod_servers(n_servers)
-    core_servers = tree.get_n_free_core_servers(n_servers)
+    edge_servers = tree.get_n_free_edge_servers(sim.n_servers)
+    pod_servers = tree.get_n_free_pod_servers(sim.n_servers)
+    core_servers = tree.get_n_free_core_servers(sim.n_servers)
 
-    edge_exec_times_s = np.random.exponential(expected_job_time_s / n_servers, edge_servers) + fixed_job_time_s
-    pod_exec_times_s = np.random.exponential(expected_job_time_s / n_servers, pod_servers) + fixed_job_time_s
-    core_exec_times_s = np.random.exponential(expected_job_time_s / n_servers, core_servers) + fixed_job_time_s
+    edge_exec_times_s = np.random.exponential(sim.expected_job_time_s / sim.n_servers, edge_servers) + sim.fixed_job_time_s
+    pod_exec_times_s = np.random.exponential(sim.expected_job_time_s / sim.n_servers, pod_servers) + sim.fixed_job_time_s
+    core_exec_times_s = np.random.exponential(sim.expected_job_time_s / sim.n_servers, core_servers) + sim.fixed_job_time_s
 
-    edge_return_size_gb = np.random.uniform(0, 2 * output_file_size_gb / n_servers, size=edge_servers) * overhead
-    pod_return_size_gb = np.random.uniform(0, 2 * output_file_size_gb / n_servers, size=pod_servers) * overhead
-    core_return_size_gb = np.random.uniform(0, 2 * output_file_size_gb / n_servers, size=core_servers) * overhead
+    edge_return_size_gb = np.random.uniform(0, 2 * sim.output_file_size_gb / sim.n_servers, size=edge_servers) * sim.overhead
+    pod_return_size_gb = np.random.uniform(0, 2 * sim.output_file_size_gb / sim.n_servers, size=pod_servers) * sim.overhead
+    core_return_size_gb = np.random.uniform(0, 2 * sim.output_file_size_gb / sim.n_servers, size=core_servers) * sim.overhead
 
     edge_round_trip_time_s = 2 * tree.tau * 2
     pod_round_trip_time_s = 2 * tree.tau * 4
