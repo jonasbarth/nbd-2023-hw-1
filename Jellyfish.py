@@ -15,6 +15,8 @@ Created on Thu Apr 20 11:20:14 2023
 
 import random
 
+import numpy as np
+
 class Jellyfish:
     
     def __init__(self, n, tau, capacity):
@@ -26,8 +28,10 @@ class Jellyfish:
         self.capacity = capacity #the capacity of links in the fat-tree in Gbit/s.
         self.switches = {i: [] for i in range(self.S)} #initialize as a dictionary: key is the index, the values are the neighbor
         self.servers = (n ** 3) // 4 #number of servers
-        
-    def build_structure(self): 
+        self.server_connections = {} #server connections to switches
+        self.add_servers()
+
+    def build_structure(self):
         
         """
         |CONSTRUCTION PROCEDURE PART 1|
@@ -97,5 +101,18 @@ class Jellyfish:
                 self.switches[x].append(p1)
                 self.switches[p2].append(y)
                 self.switches[y].append(p2)
-                
-        
+
+    def add_servers(self):
+
+        server_index = 0
+
+        # Iterate over all switches
+        for switch_index in range(self.S):
+            # Calculate the number of free ports on the current switch
+            free_ports = self.n - len(self.switches[switch_index])
+
+            # Connect a number of servers equal to the number of free ports to the current switch
+            for _ in range(free_ports):
+                if server_index < self.servers:
+                    self.server_connections[server_index] = switch_index
+                    server_index += 1

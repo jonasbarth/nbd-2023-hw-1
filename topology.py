@@ -46,23 +46,19 @@ class Topology:
         """
         pass
 
+
 class Jellyfish(Topology):
 
     def __init__(self, n, tau, capacity):
         super().__init__(n, tau, capacity)
-        self.r = n // 2  # number of neighbor
+        self.r = n // 2  # number of neighbors
         self.S = n ** 2  # number of switches
         self.switches = {i: [] for i in
                          range(self.S)}  # initialize as a dictionary: key is the index, the values are the neighbor
         self.servers = (n ** 3) // 4  # number of servers
-
+        self.server_connections = {}  # server connections to switches
         self.build_structure()
-
-    def n_closest(self, n):
-        pass
-
-    def avg_throughput(self, server):
-        pass
+        self.add_servers()
 
     def build_structure(self):
 
@@ -134,4 +130,23 @@ class Jellyfish(Topology):
                 self.switches[x].append(p1)
                 self.switches[p2].append(y)
                 self.switches[y].append(p2)
+
+    def add_servers(self):
+        server_index = 0
+        # Iterate over all switches
+        for switch_index in range(self.S):
+            # Calculate the number of free ports on the current switch
+            free_ports = self.n - len(self.switches[switch_index])
+            # Connect a number of servers equal to the number of free ports to the current switch
+            for _ in range(free_ports):
+                if server_index < self.servers:
+                    self.server_connections[server_index] = switch_index
+                    server_index += 1
+
+    def n_closest(self, n):
+
+        pass
+
+    def avg_throughput(self, server):
+        pass
 
