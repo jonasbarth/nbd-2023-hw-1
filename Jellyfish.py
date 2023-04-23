@@ -17,11 +17,13 @@ import random
 
 class Jellyfish:
     
-    def __init__(self, n): 
+    def __init__(self, n, tau, capacity):
         
         self.n = n       #number of ports of a swith
         self.r = n // 2  #number of neighbor
         self.S = n ** 2  #number of switches
+        self.tau = tau   #trip time between two nodes in the server in micro-seconds
+        self.capacity = capacity #the capacity of links in the fat-tree in Gbit/s.
         self.switches = {i: [] for i in range(self.S)} #initialize as a dictionary: key is the index, the values are the neighbor
         self.servers = (n ** 3) // 4 #number of servers
         
@@ -76,7 +78,7 @@ class Jellyfish:
         
         """    
 
-        for i in range(len(self.S)): #iterate over the switches
+        for i in range(self.S): #iterate over the switches
             
             if len(self.switches[i]) <= self.r - 2: #check for >= 2 free ports 
                 
