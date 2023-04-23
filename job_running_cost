@@ -28,22 +28,13 @@ def simulate_job_running_cost(n_servers, n_simulations, sim, tree):
     """
     sum_response_time = 0 
     sum_task_time = 0
-    
-    for _ in range(n_simulations): 
-    
-        sum_response_time += simulate_fat_tree_response_time(sim, tree)
-        
-        task_time = 0
-        
-        for _ in range(n_servers):
-            
-            exec_times = np.random.exponential(expected_job_time_s / n_servers, n_servers)
-            
-            task_time += (fixed_job_time_s + exec_times)
-            
-        sum_task_time += task_time/n_servers
-        
-    job_running_cost = sum_response_time/n_simulations + (xi * (sum_task_time/n_simulations))
+
+    exec_times = np.random.exponential(expected_job_time_s / n_servers, n_servers * n_simulations) + sim.fixed_job_time_s
+    expected_exec_time = np.mean(exec_times)
+
+    expected_response_time = np.mean([simulate_fat_tree_response_time(sim, tree) for _ in range(n_simulations)])
+
+    job_running_cost = expected_response_time + xi * expected_exec_time
     
     return job_running_cost
         
