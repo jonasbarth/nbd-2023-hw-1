@@ -33,7 +33,7 @@ class FatTree:
         broadcast_array = broadcast_array.reshape((n, 1, 1))
 
         self.all_servers += broadcast_array
-
+        self.all_servers_flat = self.all_servers.flatten()
         self.n_hops_cache = np.ones(self.n_servers) * -1
         self.avg_throughput_cache = np.ones(self.n_servers) * -1
         self.round_trip_time_cache = np.ones(self.n_servers) * -1
@@ -104,29 +104,6 @@ class FatTree:
         self.round_trip_time_cache[server] = time
         return time
 
-    def _get_edge_servers(self, server, n, pod_number):
-
-        edge_number = server % self.n_servers_per_pod // self.n_edge_servers
-        edge_servers = self.all_servers[pod_number, edge_number]
-        edge_servers = np.delete(edge_servers, np.argwhere(edge_servers == server))
-
-        edge_server_throughput = self._calc_avg_throughput(edge_servers[0], edge_servers)
-        self._set_avg_throughput_cache(edge_servers, edge_server_throughput)
-        self._set_hop_cache(edge_servers, 2)
-        n_edge_servers = min(n, edge_servers.shape[0])
-
-        return edge_servers[0:n_edge_servers], n_edge_servers
-
-    def _get_pod_servers(self, pod_number, edge_servers, n_pod_servers):
-        pod_servers = self.all_servers[pod_number].flatten()
-        pod_servers = pod_servers[~np.isin(pod_servers, edge_servers)]
-        pod_servers = pod_servers[0:n_pod_servers]
-
-        pod_server_throughput = self._calc_avg_throughput(pod_servers[0], pod_servers)
-        self._set_avg_throughput_cache(pod_servers, pod_server_throughput)
-        self._set_hop_cache(pod_servers, 4)
-
-        return pod_servers
 
     def n_closest(self, server: int, n_closest: int):
         """Finds the n closest servers in terms of number of hops.
@@ -134,72 +111,65 @@ class FatTree:
         :arg
         server - the server from which to find the closest neighbours from.
         """
-        pod_number = server // self.n_servers_per_pod
 
-        # get the edge switch
+        pod_number = server // self.n_servers_per_pod
         edge_number = server % self.n_servers_per_pod // self.n_edge_servers
 
-        n_edge_servers = min(n_closest, self.n_edge_servers - 1)
+        # get all servers from the pod and more
+        if n_closest > self.n_servers_per_pod:
+            # pick the pod
+            # get leftovers
+            # distribute over or below
+            pod_servers = self.all_servers[pod_number].flatten()
+            edge_servers = self.all_servers[pod_number, edge_number]
+            start, end = pod_servers[0], pod_servers[self.n_servers_per_pod - 1]
 
-        # pick only edge servers
-        edge_servers = self.all_servers[pod_number, edge_number][:n_edge_servers + 1]
+            n_remaining_servers = n_closest - self.n_servers_per_pod + 1
 
-        start, end = edge_servers[0], edge_servers[n_edge_servers]
+            below = min(start, n_remaining_servers)
+            above = n_remaining_servers - below
+            closest_servers = self.all_servers_flat[start - below:end + above + 1]
+            closest_servers = closest_servers[closest_servers != server]
+            self._set_hop_cache(closest_servers, 6)
+            self._set_hop_cache(pod_servers, 4)
+            self._set_hop_cache(edge_servers, 2)
+            return closest_servers
 
-        if n_closest - n_edge_servers == 0:
-            return np.array([i for i in range(start, end + 1) if i != server], dtype=np.unit16)
-        # get the start server
+        # get all servers from the edge switch and more
+        if n_closest > self.n_edge_servers:
+            edge_servers = self.all_servers[pod_number, edge_number]
+            pod_servers = self.all_servers[pod_number].flatten()
+            pod_start, pod_end = pod_servers[0], pod_servers[self.n_servers_per_pod - 1]
 
-        pod_number = server // self.n_servers_per_pod
+            start, end = edge_servers[0], edge_servers[self.n_edge_servers - 1]
 
-        remaining_servers = n_closest - n_edge_servers
+            n_remaining_servers = n_closest - self.n_edge_servers + 1
+            # restrict to servers in the same pod
+            # find the start of the pod
+            # find how much space we have before
+            below = min(start - pod_start, n_remaining_servers)
+            above = n_remaining_servers - below
+            closest_servers = self.all_servers_flat[start - below: end + above + 1]
+            closest_servers = closest_servers[closest_servers != server]
+            self._set_hop_cache(closest_servers, 4)
+            self._set_hop_cache(edge_servers, 2)
+            return closest_servers
 
-        n_pod_servers = min(remaining_servers, self.n_servers_per_pod - 1)
+        # get from a single edge
+        edge_servers = self.all_servers[pod_number, edge_number]
 
-        pod_servers = self.all_servers[pod_number].flatten()[:n_pod_servers + 1]
+        edge_start, edge_end = edge_servers[0], edge_servers[self.n_edge_servers - 1]
 
+        below = min(server - edge_start, n_closest)
+        above = n_closest - below
 
-
-
-        closest_servers = np.ones(n_closest, dtype=np.uint16)
-
-        edge_servers, n_edge_servers = self._get_edge_servers(server, n_closest, pod_number)
-
-        closest_servers[0:n_edge_servers] = edge_servers[0:n_edge_servers]
-
-        if n_closest <= n_edge_servers:
-            return closest_servers[0:n_edge_servers]
-
-        n_remaining_servers = n_closest - n_edge_servers
-
-        # either the entire pod, or a fraction of it
-        n_pod_servers = np.min((n_remaining_servers, self.n_servers_per_pod - n_edge_servers))
-        pod_servers = self._get_pod_servers(pod_number, edge_servers, n_pod_servers)
-        n_remaining_servers = n_closest - n_edge_servers - n_pod_servers
-
-        closest_servers[n_edge_servers:n_edge_servers + n_pod_servers] = n_pod_servers
-
-        if n_remaining_servers == 0:
-            return closest_servers[0:n_edge_servers + n_pod_servers]
-
-        remaining_servers = self.all_servers.flatten()
-        remaining_servers = remaining_servers[~np.isin(remaining_servers, edge_servers)]
-        remaining_servers = remaining_servers[~np.isin(remaining_servers, server)]
-        remaining_servers = remaining_servers[~np.isin(remaining_servers, pod_servers)]
-
-        rest_servers = remaining_servers[0:n_remaining_servers]
-
-        remaining_server_throughput = self._calc_avg_throughput(remaining_servers[0], remaining_servers)
-        self._set_avg_throughput_cache(remaining_servers, remaining_server_throughput)
-        self._set_hop_cache(rest_servers, 6)
-
-        closest_servers[n_edge_servers + n_pod_servers:n_edge_servers + n_pod_servers + n_remaining_servers] = rest_servers
-
-        return closest_servers[0:n_edge_servers + n_pod_servers + n_remaining_servers]
+        closest_servers = np.array([i for i in range(server - below, server + above + 1) if i != server])
+        closest_servers = closest_servers[closest_servers != server]
+        self._set_hop_cache(closest_servers, 2)
+        return closest_servers
 
     def _set_hop_cache(self, servers, hops):
-        for s in servers:
-            self.n_hops_cache[s] = hops
+        self.n_hops_cache[servers] = hops
 
     def _set_avg_throughput_cache(self, servers, throughput):
         for s in servers:
@@ -211,24 +181,3 @@ class FatTree:
                      / sum([1 / self.round_trip_time(server) for server in servers])
 
         return throughput
-
-    def t(self):
-        # get the pod
-        pass
-        """
-        pod_number = server // self.n_servers_per_pod
-
-        # get the edge switch
-        edge_number = server % self.n_servers_per_pod // self.n_edge_servers
-
-        # get the start server
-        start_idx = self.all_servers[pod_number, edge_number][0]
-
-        # get the end server
-        end_edge_server = min(n_closest, self.n_edge_servers)
-        end_idx = self.all_servers[pod_number, edge_number][end_edge_server]
-
-        n_closest -= end_edge_server - start_idx
-        if n_closest == 0:
-            return self.all_servers.flatten()[start_idx:end_idx]
-        """
