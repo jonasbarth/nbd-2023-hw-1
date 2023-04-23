@@ -1,6 +1,7 @@
 """Module for data centre topologies."""
 from abc import abstractmethod
 import random
+import numpy as np
 
 
 class Topology:
@@ -22,11 +23,12 @@ class Topology:
         self.main_server = server
 
     @abstractmethod
-    def n_closest(self, n):
+    def n_closest(self, server, n_closest):
         """Finds the n closest servers in terms of number of hops.
 
         :arg
-        n - the number of closest servers to find.
+        server - main server to start the research
+        n_closest - the number of closest servers to find.
 
         :return
         a numpy array of the n closest servers to the main server.
@@ -143,10 +145,39 @@ class Jellyfish(Topology):
                     self.server_connections[server_index] = switch_index
                     server_index += 1
 
-    def n_closest(self, n):
-
-        pass
+    def n_closest(self, server, n_closest):
+        # Initialize a set to keep track of visited servers
+        visited = set()
+        # Initialize a queue with the starting server
+        queue = [server]
+        # Initialize an array to store the nearest servers
+        nearest_servers = []
+        # While the queue is not empty and we haven't found enough nearest servers
+        while queue and len(nearest_servers) < n_closest:
+            # Pop the first server from the queue
+            current_server = queue.pop(0)
+            # If the current server has not been visited yet
+            if current_server not in visited:
+                # Add it to the visited set
+                visited.add(current_server)
+                # Add it to the nearest servers array
+                nearest_servers.append(current_server)
+                # Find the switch that the current server is connected to
+                switch = self.server_connections[current_server]
+                # Iterate over all neighboring switches of the current switch
+                for neighbor_switch in self.switches[switch]:
+                    # Iterate over all servers
+                    for neighbor_server in self.server_connections:
+                        # If a server is connected to the neighboring switch
+                        if self.server_connections[neighbor_server] == neighbor_switch:
+                            # Add it to the queue to be explored later
+                            queue.append(neighbor_server)
+        # Return a numpy array containing the nearest servers in terms of hops
+        return np.array(nearest_servers[:n_closest])
 
     def avg_throughput(self, server):
+
+
+
         pass
 
