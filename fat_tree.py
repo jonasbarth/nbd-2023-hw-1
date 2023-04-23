@@ -159,3 +159,15 @@ class FatTree:
                      / sum([1 / self.round_trip_time(server) for server in servers])
 
         return throughput
+
+    def get_n_free_edge_servers(self, n_servers):
+        return min(self.n_edge_servers - 1, n_servers)
+
+    def get_n_free_pod_servers(self, n_servers):
+        edge_servers = self.get_n_free_edge_servers(n_servers)
+        return min(self.n_servers_per_pod - 1 - edge_servers, n_servers - edge_servers)
+
+    def get_n_free_core_servers(self, n_servers):
+        edge_servers = self.get_n_free_edge_servers(n_servers)
+        pod_servers = self.get_n_free_pod_servers(n_servers)
+        return min(self.n_servers - 1 - edge_servers - pod_servers, n_servers - edge_servers - pod_servers)
