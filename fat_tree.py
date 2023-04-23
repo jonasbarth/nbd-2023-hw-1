@@ -52,21 +52,6 @@ class FatTree:
         """
         return self.n_hops_cache[server]
 
-    def in_same_pod(self, server):
-        """Checks whether two servers are in the same pod in a fat-tree.
-
-        :arg
-        i - the first server.
-        j - the second server.
-
-        :return
-        True if servers i and j are in the same pod, False otherwise.
-        """
-        main_pod_number = self.main_server // self.n_servers_per_pod
-        server_pod_number = server // self.n_servers_per_pod
-
-        return main_pod_number == server_pod_number
-
     def avg_throughput(self, server, servers):
         """Calculates the average throughput between the main server and server.
 
@@ -104,22 +89,17 @@ class FatTree:
         self.round_trip_time_cache[server] = time
         return time
 
-
     def n_closest(self, server: int, n_closest: int):
         """Finds the n closest servers in terms of number of hops.
 
         :arg
         server - the server from which to find the closest neighbours from.
         """
-
         pod_number = server // self.n_servers_per_pod
         edge_number = server % self.n_servers_per_pod // self.n_edge_servers
 
         # get all servers from the pod and more
         if n_closest > self.n_servers_per_pod:
-            # pick the pod
-            # get leftovers
-            # distribute over or below
             pod_servers = self.all_servers[pod_number].flatten()
             edge_servers = self.all_servers[pod_number, edge_number]
             start, end = pod_servers[0], pod_servers[self.n_servers_per_pod - 1]
@@ -144,9 +124,7 @@ class FatTree:
             start, end = edge_servers[0], edge_servers[self.n_edge_servers - 1]
 
             n_remaining_servers = n_closest - self.n_edge_servers + 1
-            # restrict to servers in the same pod
-            # find the start of the pod
-            # find how much space we have before
+
             below = min(start - pod_start, n_remaining_servers)
             above = n_remaining_servers - below
             closest_servers = self.all_servers_flat[start - below: end + above + 1]
@@ -155,7 +133,7 @@ class FatTree:
             self._set_hop_cache(edge_servers, 2)
             return closest_servers
 
-        # get from a single edge
+        # get servers from a single edge
         edge_servers = self.all_servers[pod_number, edge_number]
 
         edge_start, edge_end = edge_servers[0], edge_servers[self.n_edge_servers - 1]
