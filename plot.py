@@ -44,3 +44,13 @@ def plot_connectivity_prob(connectivity_prob: list[connectivity.Connectivity], l
         ax.legend()
 
     return fig, ax
+
+
+def plot_response_time(servers, response_times):
+    """Plots the expected response time."""
+    fig, ax = plt.subplots(1)
+
+    ax.plot(servers, response_times)
+    ax.set(title="Normalised Response Time", xlabel="response time", ylabel="number of servers")
+
+    return fig, ax

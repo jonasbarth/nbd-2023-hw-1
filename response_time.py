@@ -3,8 +3,9 @@ import numpy as np
 from fat_tree import FatTree
 
 
-def simulate_response_time(n_servers, expected_job_time_s, fixed_job_time_s, input_file_size_gb, output_file_size_gb,
-                           overhead, tree: FatTree):
+def simulate_fat_tree_response_time(n_servers, expected_job_time_s, fixed_job_time_s, input_file_size_gb, output_file_size_gb,
+                                    overhead, tree: FatTree):
+    """Simulates a response time for the Fat Tree topology."""
     outbound_data_size_gb = input_file_size_gb / n_servers * overhead
 
     edge_servers = tree.get_n_free_edge_servers(n_servers)
@@ -56,10 +57,3 @@ def calc_round_trip_time(tau, n_hops):
 
 def calc_avg_throughput(capacity, round_trip_time, network_throughput):
     return capacity * (1 / round_trip_time) / network_throughput
-
-
-def calc_execution_time(n_servers, expected_job_time_s, fixed_job_time_s, round_trip_time, outbound_time):
-    exec_times = np.random.exponential(expected_job_time_s / n_servers, n_servers)
-    exec_times += fixed_job_time_s
-
-

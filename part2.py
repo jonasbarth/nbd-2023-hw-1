@@ -1,11 +1,16 @@
-import random
+import os
+
 import numpy as np
-import matplotlib.pyplot as plt
-import fat_tree
 from tqdm import tqdm
-from response_time import simulate_response_time
+
+import fat_tree
+from plot import plot_response_time
+from response_time import simulate_fat_tree_response_time
 
 if __name__ == "__main__":
+
+    if not os.path.exists('img'):
+        os.makedirs('img')
 
     N = 10000
     n = 64
@@ -23,11 +28,10 @@ if __name__ == "__main__":
     response_times = []
     servers = range(1, N + 1, 10)
     for n_servers in tqdm(servers):
-        response_time = np.mean([simulate_response_time(n_servers, expected_job_time_s, fixed_job_time_s, input_file_size_gb, output_file_size_gb, overhead, tree) for _ in range(10)])
+        response_time = np.mean([simulate_fat_tree_response_time(n_servers, expected_job_time_s, fixed_job_time_s,
+                                                                 input_file_size_gb, output_file_size_gb, overhead, tree) for _ in range(100)])
         response_times.append(response_time)
 
-    plt.plot(servers, np.array(response_times) / baseline)
-    plt.xlabel("Number of Servers")
-    plt.ylabel("Response Time")
-    plt.title("Normalised Response Time")
-    plt.show()
+    fig, _ = plot_response_time(servers, np.array(response_times) / baseline)
+
+    fig.savefig("img/response_time.eps", format="eps")
