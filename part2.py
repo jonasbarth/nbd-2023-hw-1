@@ -17,15 +17,15 @@ if __name__ == "__main__":
     output_file_size_gb = 4000
     overhead = 1 + 48 / 1500
 
-    baseline = np.random.exponential(expected_job_time_s) + fixed_job_time_s
+    baseline = expected_job_time_s + fixed_job_time_s
 
     tree = fat_tree.FatTree(n, tau_s, capacity_gbit)
     response_times = []
 
-    servers = range(1, N + 1, 10)
+    servers = range(1, N + 1, 100)
 
     for n_servers in tqdm(servers):
-        response_time = np.mean([simulate_response_time(n_servers) for _ in range(10)])
+        response_time = np.mean([simulate_response_time(n_servers, expected_job_time_s, fixed_job_time_s, tree, input_file_size_gb, output_file_size_gb, overhead) for _ in range(10)])
         response_times.append(response_time)
 
     plt.plot(servers, np.array(response_times) / baseline)
