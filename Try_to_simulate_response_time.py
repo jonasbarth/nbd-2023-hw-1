@@ -25,6 +25,4 @@ if __name__ == "__main__":
     tree.build_structure()
     tree.add_servers()
 
-    print(tree.response_time(expected_job_time_s, fixed_job_time_s, 100, input_file_size_gb, overhead, output_file_size_gb))
-
 
