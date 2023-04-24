@@ -1,4 +1,4 @@
-"""Script for creating plots for part 1 of the assigment."""
+"""Script for creating plots for part 1 of the assignment."""
 import complexity
 import connectivity
 import graphs
@@ -31,22 +31,17 @@ if __name__ == "__main__":
                                         title="Connectivity Algorithm Complexity")
     fig.savefig("img/connectivity_complexity.eps", format="eps")
 
-
     # create connectivity probability plots
 
     r_connec1 = connectivity.r_random_connectivity(range(10, 101), 2, 10)
     r_connec2 = connectivity.r_random_connectivity(range(10, 101), 8, 10)
 
     fig, _ = plot.plot_connectivity_prob([r_connec1, r_connec2], ["r = 2", "r = 8"], "R-Random Graph Connectivity",
-                                       "Number of Nodes")
+                                         "Number of Nodes")
 
     fig.savefig("img/r-random_graph_connectivity.eps", format="eps")
 
     er_connec = connectivity.er_connectivity(100, np.linspace(0.01, 1, 100), 10)
-    fig, _ = plot.plot_connectivity_prob([er_connec], [""], "Erdos-Renyi Graph Connectivity",
-                                          "p")
+    fig, _ = plot.plot_connectivity_prob([er_connec], [""], "Erdos-Renyi Graph Connectivity", "p")
 
     fig.savefig("img/er-graph_connectivity.eps", format="eps")
-
-
-

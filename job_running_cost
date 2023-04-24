@@ -6,16 +6,17 @@ Created on Tue Apr 18 15:34:00 2023
 @author: giacomo
 """
 import numpy as np
-
-import matplotlib.pyplot as plt
-import fat_tree
 from tqdm import tqdm
+
+import fat_tree
+from plot import plot_job_running_cost
+from response_time import simulate_fat_tree_response_time, TopologySimulation
 
 """
 Need to import the module with the simulate response time
 """
 
-def simulate_job_running_cost(n_servers, n_simulations):
+def simulate_job_running_cost(n_servers, n_simulations, sim, tree):
     """
     According to the formula, in order to extract the expected value of the 
     response time and of theta, the function does a simulation in which it 
@@ -25,24 +26,17 @@ def simulate_job_running_cost(n_servers, n_simulations):
     returns the job running cost. 
     
     """
-    sum_response_time = 0 
-    sum_task_time = 0
-    
-    for _ in range(n_simulations): 
-    
-        sum_response_time += simulate_response_time(n_servers)
-        
-        task_time = 0
-        
-        for _ in range(n_servers):
-            
-            exec_times = np.random.exponential(expected_job_time_s / n_servers, n_servers)
-            
-            task_time += (fixed_job_time_s + exec_times)
-            
-        sum_task_time += task_time/n_servers
-        
-    job_running_cost = sum_response_time/n_simulations + (xi * (sum_task_time/n_simulations))
+    # sample job running times for all simulations
+    exec_times = np.random.exponential(expected_job_time_s / n_servers, n_servers * n_simulations) + sim.fixed_job_time_s
+    exec_times = np.reshape(exec_times, (n_simulations, n_servers))
+
+    # get the sum of job running cost for each simulation
+    exec_times = np.sum(exec_times, axis=1)
+    expected_exec_time = np.mean(exec_times)
+
+    expected_response_time = np.mean([simulate_fat_tree_response_time(sim, tree) for _ in range(n_simulations)])
+
+    job_running_cost = expected_response_time + xi * expected_exec_time
     
     return job_running_cost
         
@@ -68,8 +62,11 @@ if __name__ == "__main__":
     servers = range(1, N + 1, 10)
 
     for n_servers in tqdm(servers):
-        
-        job_cost = simulate_job_running_cost(n_servers, 10)
+        sim = TopologySimulation(n_servers, tau_s, capacity_gbit, expected_job_time_s, fixed_job_time_s,
+                                 input_file_size_gb,
+                                 output_file_size_gb, overhead)
+
+        job_cost = simulate_job_running_cost(n_servers, 10, sim, tree)
         
         job_costs.append(job_cost)
         
@@ -77,12 +74,8 @@ if __name__ == "__main__":
     Plots
     """
 
-    plt.plot(servers, np.array(job_costs) / baseline)
-    plt.xlabel("Number of Servers")
-    plt.ylabel("S")
-    plt.title("Normalised Job Running Cost")
-    plt.show()
-
+    fig, _ = plot_job_running_cost(servers, np.array(job_costs) / baseline)
+    fig.savefig("img/job_running_cost.eps", format="eps")
     """
     Point 4: Numerical value of the optimal number of servers (minimizing the job
             job running cost)

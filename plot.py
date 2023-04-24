@@ -44,3 +44,27 @@ def plot_connectivity_prob(connectivity_prob: list[connectivity.Connectivity], l
         ax.legend()
 
     return fig, ax
+
+
+def plot_response_time(servers, response_times: [np.array], labels: [str]):
+    """Plots the expected response time."""
+    fig, ax = plt.subplots(1)
+
+    for response_time, label in zip(response_times, labels):
+        ax.plot(servers, response_time, label=label)
+
+    if len(response_times) > 1:
+        ax.legend()
+
+    ax.set(title="Normalised Response Time", ylabel="Response Time", xlabel="Number of Servers")
+
+    return fig, ax
+
+def plot_job_running_cost(servers, costs):
+    """Creates a figure for the running cost."""
+    fig, ax = plt.subplots(1)
+
+    ax.plot(servers, costs)
+    ax.set(title="Normalised Job Running Cost", xlabel="running cost", ylabel="number of servers")
+
+    return fig, ax
