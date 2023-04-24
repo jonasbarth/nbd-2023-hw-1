@@ -14,10 +14,11 @@ class Jellyfish():
         self.tau = tau
         self.capacity = capacity
         self.r = n // 2  # number of neighbors
-        self.S = n ** 2  # number of switches
+        self.servers = (n ** 3) // 4  # number of servers
+        self.S = self.servers//(self.n - self.r) # number of switches
         # initialize as a dictionary: key is the index, the values are the neighbor
         self.switches = {i: [] for i in range(self.S)}
-        self.servers = (n ** 3) // 4  # number of servers
+
         self.server_connections = {}  # server connections to switches
 
     def build_structure(self):
@@ -39,10 +40,9 @@ class Jellyfish():
                         -remove from the list of switches with free ports
         """
         switches_with_free_ports = list(range(self.S))  # indexes of switches with free port
-
+        max_attempts = 1000  # maximum number of unsuccessful attempts before breaking out of the loop
+        attempts = 0  # counter for unsuccessful attempts
         while switches_with_free_ports:
-
-            if len(switches_with_free_ports)!= 2:
 
                 switch1 = random.choice(switches_with_free_ports)  # random choices
                 switch2 = random.choice(switches_with_free_ports)
@@ -51,32 +51,28 @@ class Jellyfish():
 
                     self.switches[switch1].append(switch2)  # connect them
                     self.switches[switch2].append(switch1)
-
+                    attempts = 0
                     if len(self.switches[switch1]) == self.r:  # check maximum number of neighbor
 
                         switches_with_free_ports.remove(switch1)  # no more free ports
 
                     if len(self.switches[switch2]) == self.r:
                         switches_with_free_ports.remove(switch2)
+                else:
+                    attempts += 1
 
-                print(len(switches_with_free_ports))
+                if attempts >= max_attempts:  # check if maximum number of attempts has been reached
+                    print(len(switches_with_free_ports))
+                    break
 
-            free_switches = [switches_with_free_ports[0], switches_with_free_ports[1]]
-
-        for free in free_switches:
+        for element in switches_with_free_ports:
 
             for switch in self.switches:
 
-                if len(self.switches[switch]) < self.r:
+                if switch != element and len(self.switches[switch]) > self.r:
 
-                    if switch != free:
-
-                        self.switches[switch].append(free)
-                        self.switches[free].append(switch)
-
-                        break
-
-
+                    self.switches[switch].append(element)
+                    self.switches[element].append(switch)
 
 
         """
