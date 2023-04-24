@@ -2,6 +2,7 @@
 from abc import abstractmethod
 import random
 import numpy as np
+from tqdm import tqdm
 
 
 class Topology:
@@ -114,7 +115,7 @@ class Jellyfish(Topology):
 
         """
 
-        for i in range(self.S):  # iterate over the switches
+        for i in tqdm(range(self.S)):  # iterate over the switches
 
             if len(self.switches[i]) <= self.r - 2:  # check for >= 2 free ports
 
@@ -137,7 +138,7 @@ class Jellyfish(Topology):
     def add_servers(self):
         server_index = 0
         # Iterate over all switches
-        for switch_index in range(self.S):
+        for switch_index in tqdm(range(self.S)):
             # Calculate the number of free ports on the current switch
             free_ports = self.n - len(self.switches[switch_index])
             # Connect a number of servers equal to the number of free ports to the current switch
@@ -194,12 +195,6 @@ class Jellyfish(Topology):
                             queue.append((neighbor_server, distance + 1))
         # If the end server was not found, return -1 to indicate that it is not reachable from the start server
         return -1
-
-    def avg_throughput(self, i, j):
-
-        throughput = self.capacity * (1/(2 * self.tau * self.get_n_hops(i, j)))/sum([1/(2 * self.tau * self.get_n_hops(i, k)) for k in range(self.servers)])
-
-        return throughput
 
     def response_time(self, expected_job_time, fixed_job_time, n_parallel_servers, L_f, f, L_0):
 
