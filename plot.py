@@ -56,7 +56,7 @@ def plot_response_time(servers, response_times: [np.array], labels: [str]):
     if len(response_times) > 1:
         ax.legend()
 
-    ax.set(title="Normalised Response Time", xlabel="response time", ylabel="number of servers")
+    ax.set(title="Normalised Response Time", ylabel="Response Time", xlabel="Number of Servers")
 
     return fig, ax
 
