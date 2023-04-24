@@ -46,17 +46,17 @@ def plot_connectivity_prob(connectivity_prob: list[connectivity.Connectivity], l
     return fig, ax
 
 
-def plot_response_time(servers, response_times: [np.array], labels: [str]):
+def plot_response_time(servers, response_times: [np.array], labels: [str],optimal_servers):
     """Plots the expected response time."""
     fig, ax = plt.subplots(1)
 
-    for response_time, label in zip(response_times, labels):
+    for response_time, label, optimal_server in zip(response_times, labels, optimal_servers):
         ax.plot(servers, response_time, label=label)
-
-    if len(response_times) > 1:
-        ax.legend()
+        ax.axvline(x=optimal_server, ls="--", label="Optimal Servers")
+        ax.text(x=optimal_server * 0.90, y=np.max(response_times), s=optimal_server)
 
     ax.set(title="Normalised Response Time", ylabel="Response Time", xlabel="Number of Servers")
+    ax.legend()
 
     return fig, ax
 

@@ -36,8 +36,8 @@ if __name__ == "__main__":
         fat_tree_response_times.append(response_time)
 
     fat_tree_response_times = np.array(fat_tree_response_times)
-    optimal_servers = servers[np.argmin(fat_tree_response_times)]
+    optimal_servers = [servers[np.argmin(fat_tree_response_times)]]
 
-    fig, _ = plot_response_time(servers, [fat_tree_response_times / baseline], ["Fat Tree"])
+    fig, _ = plot_response_time(servers, [fat_tree_response_times / baseline], ["Fat Tree"],optimal_servers)
 
     fig.savefig("img/response_time.eps", format="eps")
