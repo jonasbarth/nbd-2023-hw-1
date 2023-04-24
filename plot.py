@@ -60,11 +60,22 @@ def plot_response_time(servers, response_times: [np.array], labels: [str],optima
 
     return fig, ax
 
-def plot_job_running_cost(servers, costs):
+def plot_job_running_cost(servers,costs):
     """Creates a figure for the running cost."""
     fig, ax = plt.subplots(1)
 
     ax.plot(servers, costs)
-    ax.set(title="Normalised Job Running Cost", xlabel="running cost", ylabel="number of servers")
+    ax.set(title="Normalised Job Running Cost", ylabel="running cost", xlabel="number of servers")
 
+    return fig, ax
+
+def plot_job_running_cost_t(servers, costs, labels, opt_n):
+
+    fig, ax = plt.subplots(1)
+    for cost, label, optimal in zip(costs, labels, opt_n):
+        ax.plot(servers, cost, label=label)
+        ax.axvline(x=optimal, ls="--", label="Optimal Servers")
+        ax.text(x=optimal+100, y=np.max(costs), s=optimal)
+    ax.set(title="Normalised Job Running Cost", ylabel="Job Running Cost", xlabel="Number of Servers")
+    ax.legend()
     return fig, ax
