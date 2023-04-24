@@ -1,68 +1,24 @@
 """Module for data centre topologies."""
-from abc import abstractmethod
+
 import random
 import numpy as np
 from tqdm import tqdm
 
 
-class Topology:
-    """Represents a data centre topology."""
+class Jellyfish():
 
     def __init__(self, n, tau, capacity):
-        self.main_server = None
-        self.n = n
-        self.n_servers = (n ** 3) // 4
+        self.main_server = None  #server A
+        self.n = n  #switch ports
+        self.n_servers = (n ** 3) // 4  #number of servers
         self.tau = tau
         self.capacity = capacity
-
-    def set_main_server(self, server):
-        """Sets the main server.
-
-        :arg
-        server - the main server of the topology.
-        """
-        self.main_server = server
-
-    @abstractmethod
-    def n_closest(self, server, n_closest):
-        """Finds the n closest servers in terms of number of hops.
-
-        :arg
-        server - main server to start the research
-        n_closest - the number of closest servers to find.
-
-        :return
-        a numpy array of the n closest servers to the main server.
-        """
-        pass
-
-    @abstractmethod
-    def avg_throughput(self, i, j):
-        """Calculates the average throughput between the main server and the provided server.
-
-        :arg
-        i - the first server.
-        j - the second server.
-
-        :return
-        the average throughput in Gbit/s.
-        """
-        pass
-
-
-class Jellyfish(Topology):
-
-    def __init__(self, n, tau, capacity):
-        super().__init__(n, tau, capacity)
         self.r = n // 2  # number of neighbors
         self.S = n ** 2  # number of switches
-        self.switches = {i: [] for i in
-                         range(self.S)}  # initialize as a dictionary: key is the index, the values are the neighbor
+        # initialize as a dictionary: key is the index, the values are the neighbor
+        self.switches = {i: [] for i in range(self.S)}
         self.servers = (n ** 3) // 4  # number of servers
         self.server_connections = {}  # server connections to switches
-        self.build_structure()
-        self.add_servers()
-        self.normalisation_term_throughput = sum([1 / (2 * self.tau * self.get_n_hops(self.main_server, k)) for k in range(self.servers)])
 
     def build_structure(self):
 
@@ -198,6 +154,8 @@ class Jellyfish(Topology):
 
     def response_time(self, expected_job_time, fixed_job_time, n_parallel_servers, L_f, f, L_0):
 
+        normalisation_term_throughput = sum([1 / (2 * self.tau * self.get_n_hops(self.main_server, k)) for k in range(self.servers)])
+
         #choose main server
 
         self.main_server = random.randint(1, self.n_servers)
@@ -206,7 +164,7 @@ class Jellyfish(Topology):
         # forth
         throughputs = []
         for i in range(n_parallel_servers):
-            throughputs.append(self.capacity*(1/(2*self.tau*self.get_n_hops(self.main_server, i)))/self.normalisation_term_throughput)
+            throughputs.append(self.capacity*(1/(2*self.tau*self.get_n_hops(self.main_server, i)))/normalisation_term_throughput)
 
         input_data = np.array([n_parallel_servers]*L_f/n_parallel_servers) + (L_f*f)
 
