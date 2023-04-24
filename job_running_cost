@@ -84,8 +84,5 @@ if __name__ == "__main__":
     Plots
     """
 
-    fig, _ = plot_job_running_cost(servers, np.array(job_costs) / baseline)
-    fig.savefig("img/job_running_cost.jpg", format="jpg")
-
-    fig2, _2 = plot_job_running_cost_t(servers, costs = [np.array(job_costs) / baseline], labels = ["Fat Tree"],opt_n=opt_number)
-    fig2.savefig("img/job_running_cost2.jpg", format="jpg")
+    fig, _ = plot_job_running_cost_t(servers, costs = [np.array(job_costs) / baseline], labels = ["Fat Tree"],opt_n=opt_number)
+    fig.savefig("img/job_running_cost.eps", format="eps")
