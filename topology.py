@@ -42,21 +42,42 @@ class Jellyfish():
 
         while switches_with_free_ports:
 
-            switch1 = random.choice(switches_with_free_ports)  # random choices
-            switch2 = random.choice(switches_with_free_ports)
+            if len(switches_with_free_ports)!= 2:
 
-            if switch1 != switch2 and switch1 not in self.switches[
-                switch2]:  # check if they are the same or already connected
+                switch1 = random.choice(switches_with_free_ports)  # random choices
+                switch2 = random.choice(switches_with_free_ports)
 
-                self.switches[switch1].append(switch2)  # connect them
-                self.switches[switch2].append(switch1)
+                if switch1 != switch2 and switch1 not in self.switches[switch2]:  # check if they are the same or already connected
 
-                if len(self.switches[switch1]) == self.r:  # check maximum number of neighbor
+                    self.switches[switch1].append(switch2)  # connect them
+                    self.switches[switch2].append(switch1)
 
-                    switches_with_free_ports.remove(switch1)  # no more free ports
+                    if len(self.switches[switch1]) == self.r:  # check maximum number of neighbor
 
-                if len(self.switches[switch2]) == self.r:
-                    switches_with_free_ports.remove(switch2)
+                        switches_with_free_ports.remove(switch1)  # no more free ports
+
+                    if len(self.switches[switch2]) == self.r:
+                        switches_with_free_ports.remove(switch2)
+
+                print(len(switches_with_free_ports))
+
+            free_switches = [switches_with_free_ports[0], switches_with_free_ports[1]]
+
+        for free in free_switches:
+
+            for switch in self.switches:
+
+                if len(self.switches[switch]) < self.r:
+
+                    if switch != free:
+
+                        self.switches[switch].append(free)
+                        self.switches[free].append(switch)
+
+                        break
+
+
+
 
         """
         |CONSTRUCTION PROCEDURE PART 2|

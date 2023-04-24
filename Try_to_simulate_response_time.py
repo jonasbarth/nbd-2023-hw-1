@@ -23,4 +23,5 @@ if __name__ == "__main__":
     tree = topology.Jellyfish(n, tau_s, capacity_gbit)
 
     tree.build_structure()
+    tree.add_servers()
 
