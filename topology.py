@@ -36,7 +36,7 @@ class Topology:
         pass
 
     @abstractmethod
-    def avg_throughput(self, i, j, n_servers):
+    def avg_throughput(self, i, j):
         """Calculates the average throughput between the main server and the provided server.
 
         :arg
@@ -61,6 +61,7 @@ class Jellyfish(Topology):
         self.server_connections = {}  # server connections to switches
         self.build_structure()
         self.add_servers()
+        self.normalisation_term_throughput = sum([1 / (2 * self.tau * self.get_n_hops(self.main_server, k)) for k in range(self.servers)])
 
     def build_structure(self):
 
@@ -82,7 +83,7 @@ class Jellyfish(Topology):
         """
         switches_with_free_ports = list(range(self.S))  # indexes of switches with free port
 
-        while switches_with_free_ports != []:
+        while switches_with_free_ports:
 
             switch1 = random.choice(switches_with_free_ports)  # random choices
             switch2 = random.choice(switches_with_free_ports)
@@ -194,11 +195,51 @@ class Jellyfish(Topology):
         # If the end server was not found, return -1 to indicate that it is not reachable from the start server
         return -1
 
-    def avg_throughput(self, i, j, n_servers):
+    def avg_throughput(self, i, j):
 
         throughput = self.capacity * (1/(2 * self.tau * self.get_n_hops(i, j)))/sum([1/(2 * self.tau * self.get_n_hops(i, k)) for k in range(self.servers)])
 
         return throughput
+
+    def response_time(self, expected_job_time, fixed_job_time, n_parallel_servers, L_f, f, L_0):
+
+        #choose main server
+
+        self.main_server = random.randint(1, self.n_servers)
+
+        # calculate time to transfer:
+        # forth
+        throughputs = []
+        for i in range(n_parallel_servers):
+            throughputs.append(self.capacity*(1/(2*self.tau*self.get_n_hops(self.main_server, i)))/self.normalisation_term_throughput)
+
+        input_data = np.array([n_parallel_servers]*L_f/n_parallel_servers) + (L_f*f)
+
+        throughputs = np.array(throughputs)
+
+        time_forth = input_data/throughputs
+
+        #calculate job esecution
+
+        job_esecution = np.random.exponential(expected_job_time/n_parallel_servers, n_parallel_servers) + fixed_job_time
+
+        #calculate time to transfer:
+        #back
+
+        output_job = np.random.uniform(0, (2*L_0/n_parallel_servers), n_parallel_servers)
+        output_data = output_job + (np.sum(output_job)*f)
+
+        time_back = output_data/throughputs
+
+        return time_forth + job_esecution + time_back
+
+
+
+
+
+
+
+
 
 
 
